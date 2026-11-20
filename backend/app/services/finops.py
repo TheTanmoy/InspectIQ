@@ -13,8 +13,7 @@ from datetime import datetime, timedelta
 from app.core import config, db
 
 DEFAULT_SETTINGS = {
-    "currency": "INR",
-    "usd_to_inr": 84.0,
+    "currency": "USD",  # every amount below is in US dollars (rupee figures converted at INR 84 = USD 1)
     # USD per 1 million tokens. Thinking tokens are billed as output.
     "pricing": {
         "gemini-3.8-flash": {"input_per_m": 0.50, "output_per_m": 3.00},
@@ -29,15 +28,15 @@ DEFAULT_SETTINGS = {
     "default_tokens": {"report.generate": [7000, 1400], "assistant.chat": [6500, 450],
                        "insights.explain": [1200, 300], "report.rewrite": [1500, 250]},
     "monthly_ai_budget_usd": 40.0,
-    # support & maintenance run cost, INR per month
-    "run_costs": {"hosting_inr": 9000, "monitoring_backup_inr": 2500, "it_support_hours": 20,
-                  "it_hourly_rate_inr": 1200, "model_prompt_review_hours": 6},
+    # support & maintenance run cost, USD per month
+    "run_costs": {"hosting_usd": 107, "monitoring_backup_usd": 30, "it_support_hours": 20,
+                  "it_hourly_rate_usd": 14.30, "model_prompt_review_hours": 6},
     # cost-benefit assumptions (Plant Quality Head)
     "cba": {
-        "manual_minutes_per_report": 120, "ai_review_minutes_per_report": 20, "quality_staff_rate_inr_hour": 650,
-        "scrap_cost_per_part_inr": 1800, "defective_parts_contained_earlier_per_month": 40,
-        "customer_claims_avoided_per_year": 2, "cost_per_customer_claim_inr": 750000,
-        "audit_prep_hours_saved_per_month": 24, "one_time_implementation_inr": 1500000, "horizon_months": 36,
+        "manual_minutes_per_report": 120, "ai_review_minutes_per_report": 20, "quality_staff_rate_usd_hour": 7.75,
+        "scrap_cost_per_part_usd": 21.40, "defective_parts_contained_earlier_per_month": 40,
+        "customer_claims_avoided_per_year": 2, "cost_per_customer_claim_usd": 8930,
+        "audit_prep_hours_saved_per_month": 24, "one_time_implementation_usd": 17860, "horizon_months": 36,
     },
 }
 
@@ -45,7 +44,7 @@ PURPOSE_LABEL = {"report.generate": "Report generation", "assistant.chat": "Assi
                  "insights.explain": "Insight explanation", "report.rewrite": "Section rewrite"}
 VOLUME_KEY = {"report.generate": "reports_per_day", "assistant.chat": "assistant_chats_per_day",
               "insights.explain": "insight_explains_per_day", "report.rewrite": "rewrites_per_day"}
-EDIT_SECTIONS = {"finops": {"usd_to_inr", "pricing", "volumes", "monthly_ai_budget_usd", "run_costs"}, "cba": {"cba"}}
+EDIT_SECTIONS = {"finops": {"pricing", "volumes", "monthly_ai_budget_usd", "run_costs"}, "cba": {"cba"}}
 
 
 # ---------------------------------------------------------------- settings
@@ -149,7 +148,6 @@ def usage(days: int = 30) -> dict:
                  "fallback_rate_pct": round(100 * fallback_calls / len(ok), 1) if ok else 0.0,
                  "input_tokens": tot("input_tokens"), "output_tokens": tot("output_tokens"),
                  "thinking_tokens": tot("thinking_tokens"), "cost_usd": cost,
-                 "cost_inr": round(cost * s["usd_to_inr"], 2),
                  "avg_latency_ms": int(sum(r["latency_ms"] or 0 for r in ok) / len(ok)) if ok else 0,
                  "measured_calls": len(measured), "estimated_calls": sum(1 for r in rows if r["estimated"])},
         "by_purpose": sorted(by_purpose.values(), key=lambda b: -b["cost_usd"]),
@@ -186,25 +184,25 @@ def projection(s: dict, measured: list[dict]) -> dict:
                       "cost_per_call_usd": round(cost_call, 5), "monthly_usd": round(month, 2)})
     budget = s["monthly_ai_budget_usd"]
     return {"priced_at": config.LLM_MODEL, "lines": lines, "monthly_usd": round(total, 2),
-            "monthly_inr": round(total * s["usd_to_inr"]), "annual_usd": round(total * 12, 2),
-            "annual_inr": round(total * 12 * s["usd_to_inr"]), "budget_usd": budget,
+            "annual_usd": round(total * 12, 2), "budget_usd": budget,
             "budget_used_pct": round(100 * total / budget, 1) if budget else None,
             "cost_per_report_usd": next((ln["cost_per_call_usd"] for ln in lines if ln["purpose"] == "report.generate"), 0)}
 
 
 def run_cost(s: dict, token_monthly_usd: float) -> dict:
-    rc, fx = s["run_costs"], s["usd_to_inr"]
+    rc = s["run_costs"]
     items = [
-        {"item": "AI tokens (projected)", "owner": "IT / FinOps", "monthly_inr": round(token_monthly_usd * fx)},
-        {"item": "Hosting (app server + database)", "owner": "IT Infrastructure", "monthly_inr": round(rc["hosting_inr"])},
-        {"item": "Monitoring, backup & security patching tools", "owner": "IT Operations", "monthly_inr": round(rc["monitoring_backup_inr"])},
+        {"item": "AI tokens (projected)", "owner": "IT / FinOps", "monthly_usd": round(token_monthly_usd, 2)},
+        {"item": "Hosting (app server + database)", "owner": "IT Infrastructure", "monthly_usd": round(rc["hosting_usd"], 2)},
+        {"item": "Monitoring, backup & security patching tools", "owner": "IT Operations",
+         "monthly_usd": round(rc["monitoring_backup_usd"], 2)},
         {"item": f"Application support ({rc['it_support_hours']:g} h)", "owner": "IT Support",
-         "monthly_inr": round(rc["it_support_hours"] * rc["it_hourly_rate_inr"])},
+         "monthly_usd": round(rc["it_support_hours"] * rc["it_hourly_rate_usd"], 2)},
         {"item": f"Prompt, model & rulebook review ({rc['model_prompt_review_hours']:g} h)", "owner": "IT + Quality",
-         "monthly_inr": round(rc["model_prompt_review_hours"] * rc["it_hourly_rate_inr"])},
+         "monthly_usd": round(rc["model_prompt_review_hours"] * rc["it_hourly_rate_usd"], 2)},
     ]
-    total = sum(i["monthly_inr"] for i in items)
-    return {"items": items, "monthly_inr": total, "annual_inr": total * 12}
+    total = round(sum(i["monthly_usd"] for i in items), 2)
+    return {"items": items, "monthly_usd": total, "annual_usd": round(total * 12, 2)}
 
 
 # ---------------------------------------------------------------- cost-benefit (Plant Quality Head)
@@ -213,34 +211,34 @@ def cost_benefit() -> dict:
     u = usage(30)
     c, v = s["cba"], s["volumes"]
     reports_month = v["reports_per_day"] * v["working_days_per_month"]
-    rate = c["quality_staff_rate_inr_hour"]
+    rate = c["quality_staff_rate_usd_hour"]
     hours_saved = reports_month * max(c["manual_minutes_per_report"] - c["ai_review_minutes_per_report"], 0) / 60
     benefits = [
-        {"item": "Report preparation time saved", "monthly_inr": round(hours_saved * rate),
+        {"item": "Report preparation time saved", "monthly_usd": round(hours_saved * rate, 2),
          "basis": f"{reports_month} reports x ({c['manual_minutes_per_report']} - {c['ai_review_minutes_per_report']}) min "
-                  f"= {hours_saved:.0f} h x INR {rate}/h"},
-        {"item": "Audit preparation time saved", "monthly_inr": round(c["audit_prep_hours_saved_per_month"] * rate),
-         "basis": f"{c['audit_prep_hours_saved_per_month']} h/month x INR {rate}/h (versioned, audited records)"},
-        {"item": "Scrap avoided by earlier containment", "monthly_inr": round(
-            c["defective_parts_contained_earlier_per_month"] * c["scrap_cost_per_part_inr"]),
-         "basis": f"{c['defective_parts_contained_earlier_per_month']} parts/month x INR {c['scrap_cost_per_part_inr']} "
+                  f"= {hours_saved:.0f} h x ${rate:,.2f}/h"},
+        {"item": "Audit preparation time saved", "monthly_usd": round(c["audit_prep_hours_saved_per_month"] * rate, 2),
+         "basis": f"{c['audit_prep_hours_saved_per_month']} h/month x ${rate:,.2f}/h (versioned, audited records)"},
+        {"item": "Scrap avoided by earlier containment", "monthly_usd": round(
+            c["defective_parts_contained_earlier_per_month"] * c["scrap_cost_per_part_usd"], 2),
+         "basis": f"{c['defective_parts_contained_earlier_per_month']} parts/month x ${c['scrap_cost_per_part_usd']:,.2f} "
                   "(patterns such as the bad L3 heat found days earlier)"},
-        {"item": "Customer claims avoided", "monthly_inr": round(
-            c["customer_claims_avoided_per_year"] * c["cost_per_customer_claim_inr"] / 12),
-         "basis": f"{c['customer_claims_avoided_per_year']} claims/year x INR {c['cost_per_customer_claim_inr']:,} / 12"},
+        {"item": "Customer claims avoided", "monthly_usd": round(
+            c["customer_claims_avoided_per_year"] * c["cost_per_customer_claim_usd"] / 12, 2),
+         "basis": f"{c['customer_claims_avoided_per_year']:g} claims/year x ${c['cost_per_customer_claim_usd']:,.0f} / 12"},
     ]
     sm = u["support_maintenance"]
-    benefit_m = sum(b["monthly_inr"] for b in benefits)
-    cost_m = sm["monthly_inr"]
-    net_m = benefit_m - cost_m
-    one_time = c["one_time_implementation_inr"]
+    benefit_m = round(sum(b["monthly_usd"] for b in benefits), 2)
+    cost_m = sm["monthly_usd"]
+    net_m = round(benefit_m - cost_m, 2)
+    one_time = c["one_time_implementation_usd"]
     horizon = int(c["horizon_months"])
     cumulative, cum = [], -one_time
     payback = None
     for m in range(0, horizon + 1):
         if m:
             cum += net_m
-        cumulative.append({"month": m, "cumulative_inr": round(cum)})
+        cumulative.append({"month": m, "cumulative_usd": round(cum, 2)})
         if payback is None and cum >= 0:
             payback = m
     total_cost = one_time + cost_m * horizon
@@ -248,12 +246,12 @@ def cost_benefit() -> dict:
     return {
         "settings": c, "volumes": v, "reports_per_month": reports_month, "hours_saved_per_month": round(hours_saved, 1),
         "fte_equivalent": round(hours_saved / 160, 2),
-        "benefits": benefits, "costs": sm["items"], "benefit_monthly_inr": benefit_m, "cost_monthly_inr": cost_m,
-        "net_monthly_inr": net_m, "one_time_inr": one_time, "horizon_months": horizon,
+        "currency": "USD", "benefits": benefits, "costs": sm["items"], "benefit_monthly_usd": benefit_m,
+        "cost_monthly_usd": cost_m, "net_monthly_usd": net_m, "one_time_usd": one_time, "horizon_months": horizon,
         "roi_pct": round(100 * (total_benefit - total_cost) / total_cost, 1) if total_cost else None,
-        "payback_months": payback, "net_over_horizon_inr": round(total_benefit - total_cost),
+        "payback_months": payback, "net_over_horizon_usd": round(total_benefit - total_cost, 2),
         "benefit_cost_ratio": round(total_benefit / total_cost, 2) if total_cost else None,
-        "token_share_of_run_cost_pct": round(100 * sm["items"][0]["monthly_inr"] / cost_m, 1) if cost_m else 0,
+        "token_share_of_run_cost_pct": round(100 * sm["items"][0]["monthly_usd"] / cost_m, 1) if cost_m else 0,
         "cumulative": cumulative,
         "note": "All figures are assumptions for a synthetic plant. Edit them to match your plant before deciding.",
     }

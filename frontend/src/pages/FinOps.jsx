@@ -3,8 +3,12 @@ import { api } from "../api";
 import { HBars, LineChart } from "../components/Charts.jsx";
 import { Badge, Card, ErrorBox, Kpi, Loading, fmtDate } from "../components/ui.jsx";
 
-export const inr = (v) => `₹${Math.round(v || 0).toLocaleString("en-IN")}`;
-export const usd = (v, d = 2) => `$${Number(v || 0).toFixed(d)}`;
+export const usd = (v, d = 2) => `${v < 0 ? "-" : ""}$${Math.abs(Number(v || 0)).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d })}`;
+/** compact dollars for KPI tiles: $412, $5.6k, $1.2M */
+export const usdShort = (v) => {
+  const a = Math.abs(v || 0), sign = v < 0 ? "-" : "";
+  return a >= 1e6 ? `${sign}$${(a / 1e6).toFixed(2)}M` : a >= 1e4 ? `${sign}$${(a / 1e3).toFixed(1)}k` : `${sign}$${Math.round(a).toLocaleString("en-US")}`;
+};
 const num = (v) => Number(v || 0).toLocaleString("en-IN");
 
 /** Small editable number grid used by the FinOps and Cost-Benefit pages. */
@@ -24,8 +28,8 @@ export function NumberGrid({ fields, values, onChange, disabled }) {
 const VOLUME_FIELDS = [["reports_per_day", "Reports / day"], ["assistant_chats_per_day", "Assistant chats / day"],
   ["insight_explains_per_day", "Insight explains / day"], ["rewrites_per_day", "Section rewrites / day"],
   ["working_days_per_month", "Working days / month"]];
-const RUN_FIELDS = [["hosting_inr", "Hosting ₹/month"], ["monitoring_backup_inr", "Monitoring & backup ₹/month"],
-  ["it_support_hours", "IT support hours / month"], ["it_hourly_rate_inr", "IT hourly rate ₹"],
+const RUN_FIELDS = [["hosting_usd", "Hosting $ / month"], ["monitoring_backup_usd", "Monitoring & backup $ / month"],
+  ["it_support_hours", "IT support hours / month"], ["it_hourly_rate_usd", "IT hourly rate $"],
   ["model_prompt_review_hours", "Prompt & model review h / month"]];
 
 export default function FinOps({ can, notify }) {
@@ -40,7 +44,7 @@ export default function FinOps({ can, notify }) {
     api.finopsUsage(days).then((d) => {
       setData(d);
       const s = d.settings;
-      setDraft({ usd_to_inr: s.usd_to_inr, monthly_ai_budget_usd: s.monthly_ai_budget_usd, volumes: s.volumes,
+      setDraft({ monthly_ai_budget_usd: s.monthly_ai_budget_usd, volumes: s.volumes,
         run_costs: s.run_costs, pricing: s.pricing });
     }).catch((e) => setError(e.message));
   }, [days]);
@@ -62,7 +66,7 @@ export default function FinOps({ can, notify }) {
       <header className="page-header">
         <div>
           <h1>AI Cost &amp; Operations</h1>
-          <p className="muted">Token usage, cost and the support &amp; maintenance run cost of InspectIQ – for IT Support and FinOps.</p>
+          <p className="muted">Token usage, cost and the support &amp; maintenance run cost of InspectIQ – for IT Support and FinOps. All amounts in US dollars.</p>
         </div>
         <div className="row">
           <Badge tone="indigo">Primary: {data.models.primary}</Badge>
@@ -78,8 +82,8 @@ export default function FinOps({ can, notify }) {
         <Kpi label="AI calls" value={num(k.calls)} sub={`${k.measured_calls} with measured tokens`} />
         <Kpi label="Tokens in / out" value={`${(k.input_tokens / 1000).toFixed(1)}k / ${((k.output_tokens + k.thinking_tokens) / 1000).toFixed(1)}k`}
              sub={k.thinking_tokens ? `incl. ${num(k.thinking_tokens)} thinking` : "input / output"} />
-        <Kpi label="Spend in window" value={usd(k.cost_usd, 4)} sub={inr(k.cost_inr)} />
-        <Kpi label="Projected / month" value={usd(p.monthly_usd)} sub={`${inr(p.monthly_inr)} · ${p.budget_used_pct ?? "—"}% of budget`}
+        <Kpi label="Spend in window" value={usd(k.cost_usd, 4)} sub={`last ${days} day${days > 1 ? "s" : ""}`} />
+        <Kpi label="Projected / month" value={usd(p.monthly_usd)} sub={`${p.budget_used_pct ?? "—"}% of ${usd(p.budget_usd, 0)} budget`}
              tone={overBudget ? "red" : p.budget_used_pct > 80 ? "amber" : ""} />
         <Kpi label="Fallback rate" value={`${k.fallback_rate_pct}%`} sub="answered by fallback model" tone={k.fallback_rate_pct > 30 ? "amber" : ""} />
         <Kpi label="Error rate" value={`${k.error_rate_pct}%`} sub={`avg latency ${(k.avg_latency_ms / 1000).toFixed(1)} s`} tone={k.error_rate_pct > 10 ? "red" : ""} />
@@ -117,11 +121,11 @@ export default function FinOps({ can, notify }) {
           <NumberGrid fields={VOLUME_FIELDS} values={draft.volumes} disabled={!editable} onChange={(v) => setDraft({ ...draft, volumes: v })} />
         </Card>
 
-        <Card title="Support & maintenance run cost" actions={<Badge tone="indigo">{inr(sm.monthly_inr)} / month</Badge>}>
+        <Card title="Support & maintenance run cost" actions={<Badge tone="indigo">{usd(sm.monthly_usd)} / month</Badge>}>
           <table className="table compact">
-            <thead><tr><th>Item</th><th>Owner</th><th>₹ / month</th></tr></thead>
-            <tbody>{sm.items.map((i) => <tr key={i.item}><td>{i.item}</td><td className="muted">{i.owner}</td><td><strong>{inr(i.monthly_inr)}</strong></td></tr>)}
-              <tr><td><strong>Total</strong></td><td /><td><strong>{inr(sm.monthly_inr)}</strong> <span className="muted small-text">({inr(sm.annual_inr)} / year)</span></td></tr>
+            <thead><tr><th>Item</th><th>Owner</th><th>$ / month</th></tr></thead>
+            <tbody>{sm.items.map((i) => <tr key={i.item}><td>{i.item}</td><td className="muted">{i.owner}</td><td className="nowrap"><strong>{usd(i.monthly_usd)}</strong></td></tr>)}
+              <tr><td><strong>Total</strong></td><td /><td className="nowrap"><strong>{usd(sm.monthly_usd)}</strong> <span className="muted small-text">({usd(sm.annual_usd, 0)} / year)</span></td></tr>
             </tbody>
           </table>
           <h4>Run-cost assumptions</h4>
@@ -142,7 +146,7 @@ export default function FinOps({ can, notify }) {
             </tbody>
           </table>
         </div>
-        <NumberGrid fields={[["usd_to_inr", "USD → INR rate", 0.1], ["monthly_ai_budget_usd", "Monthly AI budget $", 1]]}
+        <NumberGrid fields={[["monthly_ai_budget_usd", "Monthly AI budget $", 1]]}
                     values={draft} disabled={!editable} onChange={(v) => setDraft({ ...draft, ...v })} />
         {!editable && <p className="muted small-text">Read-only for your role – IT Support & FinOps can change prices and budgets.</p>}
       </Card>

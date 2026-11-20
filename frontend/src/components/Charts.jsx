@@ -11,7 +11,7 @@ function niceTicks(min, max, count = 5) {
 }
 
 // decimals chosen from the tick step, so narrow ranges (e.g. 29.985-30.015 mm) stay readable
-const compact = new Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 });
+const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
 const fmtFor = (min, max) => {
   if (Math.max(Math.abs(min), Math.abs(max)) >= 10000) return (v) => compact.format(v);
   const step = Math.abs(max - min) / 4 || 1;

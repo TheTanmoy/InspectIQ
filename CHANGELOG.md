@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1 - 2026-11-20
+
+### Changed
+- All costs are now in US dollars. AI token cost, support & maintenance run cost and the cost-benefit
+  assumptions are stored and calculated in USD (former rupee defaults converted at INR 84 = USD 1),
+  so token and run costs add up directly. The USD-to-INR setting is removed.
+- Product journey deck, overview video and screenshots regenerated with dollar figures.
+
 ## 1.0.0 - 2026-11-20
 
 First release of InspectIQ - AI quality inspection reports (Prompt Syndicates, AI Friday Season 3).

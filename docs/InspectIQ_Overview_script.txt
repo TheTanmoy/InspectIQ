@@ -14,6 +14,6 @@
 
 8. Across the plant, the dashboard spots patterns automatically: a porosity spike after a mould change, a drifting tool, an expired gauge.
 
-9. IT can see every token it costs. The whole system runs for about 43 thousand rupees a month, and on our assumptions it pays back in 4 months.
+9. IT can see every token it costs. The whole system runs for about 512 dollars a month, and on our assumptions it pays back in 4 months.
 
 10. InspectIQ. Hours of paperwork, now minutes of review.

@@ -113,12 +113,13 @@ def test_finops_token_cost_and_cost_benefit(ready, users):
     assert u["kpis"]["input_tokens"] >= 8000 and u["kpis"]["cost_usd"] > 0
     # 8000 in x 0.50 + 1500 out x 3.00 per 1M tokens
     assert abs(finops.call_cost_usd("gemini-3.8-flash", 8000, 1500) - 0.0085) < 1e-9
-    assert u["projection"]["monthly_usd"] > 0 and u["support_maintenance"]["monthly_inr"] > 0
+    assert u["projection"]["monthly_usd"] > 0 and u["support_maintenance"]["monthly_usd"] > 0
+    assert u["settings"]["currency"] == "USD" and "monthly_inr" not in u["projection"]
     cba = finops.cost_benefit()
-    assert cba["benefit_monthly_inr"] > cba["cost_monthly_inr"] and cba["payback_months"] is not None
+    assert cba["benefit_monthly_usd"] > cba["cost_monthly_usd"] and cba["payback_months"] is not None
     finops.update_settings("cba", {"cba": {"horizon_months": 24}})
     assert finops.cost_benefit()["horizon_months"] == 24
     with pytest.raises(ValueError):
         finops.update_settings("cba", {"pricing": {}})  # pricing is IT's section
     with pytest.raises(ValueError):
-        finops.update_settings("finops", {"usd_to_inr": -1})
+        finops.update_settings("finops", {"monthly_ai_budget_usd": -1})
