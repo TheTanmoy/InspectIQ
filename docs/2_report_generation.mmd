@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    actor U as Inspector
+    participant FE as React (Reports page)
+    participant API as FastAPI /api/reports
+    participant RB as RBAC + Audit
+    participant AG as Aggregator + Analytics
+    participant GI as Input guardrails
+    participant L as llm.py
+    participant X as Provided LLM
+    participant GO as Output guardrails
+    participant CE as Compliance engine
+    participant DB as SQLite
+
+    U->>FE: Select line, shift, batch and click Generate
+    FE->>API: POST /api/reports/generate (token)
+    API->>RB: check role can generate, log action
+    API->>AG: pull sensor, camera, manual-check data
+    AG->>AG: compute stats, out-of-spec counts, Cpk, Pareto, patterns
+    AG-->>API: facts JSON (all numbers computed by code)
+    API->>GI: facts + inspector notes
+    GI->>GI: mask names/PII, strip injection text, size cap
+    GI->>L: chat_json(template prompt, cleaned facts, temperature 0.1)
+    L->>X: request
+    alt LLM down or filtered
+        X-->>L: error
+        L-->>API: fallback: stats-only report
+    else success
+        X-->>L: report JSON
+        L-->>GO: report JSON
+        GO->>GO: schema check, number check, defect-code whitelist
+        GO->>GO: severity rules override, low-confidence flags
+        GO-->>API: report + guardrail results
+    end
+    API->>CE: check report against active rulebook version
+    CE-->>API: compliance score, pass/fail per rule
+    API->>DB: save Draft report, rule version, guardrail log
+    API->>RB: audit log entry
+    API-->>FE: report + guardrail panel + compliance score + time taken
+    FE-->>U: editable report

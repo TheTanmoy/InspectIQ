@@ -1,0 +1,18 @@
+sequenceDiagram
+    autonumber
+    actor C as Compliance Officer
+    participant FE as Compliance Rules page
+    participant API as FastAPI /api/compliance
+    participant DB as SQLite
+    participant CE as Compliance engine
+    participant AUD as Audit log
+
+    C->>FE: Change "submit within 24 h" to 12 h
+    FE->>API: PUT /api/compliance/rules/R-001
+    API->>API: check role (Compliance or QM only), validate settings
+    API->>DB: save rule as new version (old version kept)
+    API->>AUD: who, what changed, old vs new value, time
+    API->>CE: re-check open reports with new rulebook version
+    CE-->>API: report RPT-042 now FAILS R-001
+    API-->>FE: saved + affected reports
+    FE-->>C: rule updated, 1 report now non-compliant

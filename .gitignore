@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+node_modules/
+dist/
+offline/
+backend/data/
+*.db
+!.env.example
+*.log
+.claude/
+.vscode/
+backend/data/
+docs/media/screens/*.tmp

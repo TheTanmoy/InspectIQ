@@ -1,0 +1,50 @@
+flowchart TB
+    subgraph Users["Quality personnel (role-based login)"]
+        direction LR
+        I[Inspector]
+        S[Supervisor]
+        Q[Quality Manager]
+        C[Compliance Officer]
+    end
+
+    subgraph FE["React frontend"]
+        direction LR
+        LF[Live Feed]
+        RP[Reports + Editor]
+        DB[Dashboard + AI Insights]
+        CR[Compliance Rules]
+        AL[Audit Log]
+        AQ[Ask Quality AI]
+    end
+
+    subgraph BE["FastAPI backend"]
+        AUTH[Auth + RBAC]
+        INS[Inspection API + Simulator]
+        REP[Report service]
+        ANA[Analytics: SPC, Cpk, Pareto, drift]
+        CMP[Compliance rule engine]
+        GR[Guardrails: input + output]
+        LLM[llm.py adapter]
+        AUD[Audit logger]
+    end
+
+    subgraph DATA["Data"]
+        direction LR
+        SYN[(Synthetic data: sensors, camera, manual checks, history)]
+        SQL[(SQLite: reports, rules, users, audit)]
+    end
+
+    EXT[[Provided LLM API]]
+
+    Users --> FE
+    FE -->|/api + token| AUTH
+    AUTH --> INS & REP & ANA & CMP & AUD
+    INS --> SYN
+    REP --> ANA
+    REP --> GR
+    GR <--> LLM
+    LLM <--> EXT
+    REP --> CMP
+    CMP --> SQL
+    REP --> SQL
+    AUD --> SQL

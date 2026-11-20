@@ -1,0 +1,22 @@
+erDiagram
+    USERS ||--o{ REPORTS : creates
+    USERS ||--o{ AUDIT_LOG : performs
+    USERS ||--o{ LLM_CALLS : triggers
+    REPORTS ||--o{ REPORT_VERSIONS : "has versions"
+    RULE_VERSIONS }o--|| META : "rulebook_version"
+    LOTS ||--o{ MEASUREMENTS : contains
+    LOTS ||--o{ DETECTIONS : contains
+    LOTS ||--o{ MANUAL_CHECKS : contains
+    LOTS ||--o| REPORTS : "reported in"
+
+    USERS { string username PK string name string role string password_hash }
+    REPORTS { string id PK string line string lot string shift string status json data }
+    REPORT_VERSIONS { int version string changed_by string change_note json data }
+    RULE_VERSIONS { string rule_id int version int rulebook_version string changed_by json data }
+    META { string key PK string value }
+    AUDIT_LOG { datetime ts string username string action string entity json before json after }
+    LLM_CALLS { datetime ts string purpose string model string prompt_version int latency_ms bool ok json guardrails }
+    LOTS { string lot PK string line string shift datetime shift_end int lot_size int sampled }
+    MEASUREMENTS { string part_serial string feature float value float lsl float usl string gauge_id }
+    DETECTIONS { string part_serial string defect_code float confidence string severity string image_id }
+    MANUAL_CHECKS { string inspector_id string item string result string notes }

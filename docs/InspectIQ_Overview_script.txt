@@ -1,0 +1,19 @@
+1. Meet InspectIQ. Quality reports that write themselves, while people still make every decision.
+
+2. In a typical plant, an inspector spends about two hours on every quality report. That is 234 reports a month, built by hand from sensors, cameras, checklists and supplier certificates. The result is often vague, late, and unsigned.
+
+3. InspectIQ splits the work. Code computes every number. The AI writes the words. Guardrails check what the AI wrote. And people sign it off.
+
+4. Inspection data streams in live from three production lines, and every lot is traced back to the raw material heat it was made from.
+
+5. One click generates a standard report in seconds, with its purpose, scope, defects and measurements already filled in.
+
+6. Here, the AI links rising pitting on the piston rod line to one steel heat whose sulphur was outside its certificate. A material problem, not a people problem.
+
+7. The report then moves through the sign-off chain. Inspector, supervisor, quality manager, and for high risk lots, the plant quality head. Nobody can sign twice, and blocking compliance rules stop approval.
+
+8. Across the plant, the dashboard spots patterns automatically: a porosity spike after a mould change, a drifting tool, an expired gauge.
+
+9. IT can see every token it costs. The whole system runs for about 43 thousand rupees a month, and on our assumptions it pays back in 4 months.
+
+10. InspectIQ. Hours of paperwork, now minutes of review.

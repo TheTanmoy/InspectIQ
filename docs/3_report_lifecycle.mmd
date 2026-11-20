@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> Draft: AI generates report
+    Draft --> Draft: Inspector edits / AI rewrite (audit-logged)
+    Draft --> InReview: Inspector submits
+    InReview --> Draft: Supervisor requests changes
+    InReview --> Reviewed: Supervisor reviews
+    Reviewed --> Blocked: Blocking compliance rule fails
+    Blocked --> Draft: Fix issues
+    Reviewed --> Approved: Quality Manager approves (all blocking rules pass)
+    Approved --> [*]: Locked, PDF exported
