@@ -98,7 +98,8 @@ export default function App() {
           ))}
         </nav>
         <div className="sidebar-foot">
-          {health && (
+          {/* AI model / data-source status is an operations detail - only IT Support & FinOps sees it */}
+          {health && can("finops:edit") && (
             <div className="status">
               <span className={`dot ${health.llm_provider === "mock" ? "amber" : "green"}`} />
               <div className="status-text">

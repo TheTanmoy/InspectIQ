@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1 - 2026-11-20
+
+### Changed
+- The AI model and data-source status box in the sidebar is shown only to IT Support & FinOps.
+- Report headers say "AI-assisted" instead of naming the AI model for plant roles (inspector, line supervisor,
+  quality manager, compliance officer, plant quality head).
+
 ## 1.1.0 - 2026-11-20
 
 ### Added

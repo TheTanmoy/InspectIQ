@@ -109,7 +109,9 @@ export default function ReportEditor({ id, can, navigate, notify, user }) {
             {" "}{fmtDate(m.shift_start)} – {fmtDate(m.shift_end)}</p>
           <div className="row wrap">
             <Badge tone={rep.ai.mode === "llm" ? "indigo" : "neutral"}>
-              {rep.ai.mode === "llm" ? `AI: ${rep.ai.model}` : rep.ai.mode === "fallback" ? "AI unavailable – template used" : "Template mode"}
+              {/* the model name is an operations detail - only IT Support & FinOps sees it */}
+              {rep.ai.mode === "llm" ? (can("finops:edit") ? `AI: ${rep.ai.model}` : "AI-assisted")
+                : rep.ai.mode === "fallback" ? "AI unavailable – template used" : "Template mode"}
             </Badge>
             <Badge tone="green">⏱ Generated in {rep.ai.generation_seconds}s · manual ≈ {rep.ai.manual_baseline_minutes} min (assumed)</Badge>
             <Badge tone={locked ? "green" : "amber"}>{rep.ai.label}</Badge>
