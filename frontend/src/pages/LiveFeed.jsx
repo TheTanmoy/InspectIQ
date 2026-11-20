@@ -39,9 +39,10 @@ export default function LiveFeed({ can, navigate, notify }) {
     catch (e) { notify(e.message, "red"); setBusyLot(""); }
   };
 
-  const parts = events.length;
-  const oos = events.filter((e) => e.measurements.some((m) => !m.in_spec)).length;
-  const dets = events.reduce((n, e) => n + e.detections.length, 0);
+  // Totals are counted on the server since the backend started, so they only go up and survive a page
+  // reload. The feed below shows just the newest 200 parts.
+  const t = sim?.totals || { parts: 0, out_of_spec_parts: 0, detections: 0 };
+  const parts = t.parts, oos = t.out_of_spec_parts, dets = t.detections;
 
   return (
     <div className="page">
@@ -60,14 +61,14 @@ export default function LiveFeed({ can, navigate, notify }) {
       <ErrorBox error={error} />
 
       <div className="kpi-row">
-        <Kpi label="Parts this session" value={parts} />
-        <Kpi label="Out-of-spec parts" value={oos} tone={oos ? "amber" : ""} />
-        <Kpi label="Camera detections" value={dets} tone={dets ? "amber" : ""} />
+        <Kpi label="Parts this session" value={parts.toLocaleString("en-US")} sub="since the feed started" />
+        <Kpi label="Out-of-spec parts" value={oos} tone={oos ? "amber" : ""} sub={parts ? `${(100 * oos / parts).toFixed(1)}% of parts` : ""} />
+        <Kpi label="Camera detections" value={dets} tone={dets ? "amber" : ""} sub={parts ? `${(100 * dets / parts).toFixed(1)} per 100 parts` : ""} />
         <Kpi label="Active lots" value={sim?.live_lots?.length ?? 0} />
       </div>
 
       <div className="grid-2-1">
-        <Card title="Incoming parts">
+        <Card title="Incoming parts" actions={<span className="muted small-text">newest 200 shown</span>}>
           {!events.length && <Empty>Waiting for parts… {sim && !sim.running && "The feed is paused."}</Empty>}
           <div className="feed">
             {events.map((e) => {
@@ -104,7 +105,7 @@ export default function LiveFeed({ can, navigate, notify }) {
             <div key={l.lot} className="lot-row">
               <div>
                 <strong>{l.lot}</strong>
-                <div className="muted small-text">{l.sampled} parts sampled so far</div>
+                <div className="muted small-text">{l.sampled} parts sampled so far · {l.out_of_spec_parts ?? 0} out of spec · {l.detections ?? 0} camera detections</div>
               </div>
               {can("report:generate") && (
                 <button className="primary small" disabled={!!busyLot} onClick={() => generate(l.lot)}>

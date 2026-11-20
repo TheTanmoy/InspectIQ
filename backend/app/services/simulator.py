@@ -13,7 +13,7 @@ import time
 from datetime import datetime, timedelta
 
 from app.core import config
-from synthetic.generate import BAD_HEAT, LINES, SHIFTS, DEFECT_CODES, CAMERAS, LOCATIONS
+from synthetic.generate import BAD_HEAT, CAMERAS, DEFECT_CODES, LINES, LOCATIONS, PROCESS_SPIKE, SHIFTS
 
 
 def _current_shift(now: datetime) -> tuple[str, datetime, datetime]:
@@ -47,8 +47,11 @@ class Simulator:
         self.running = False
 
     def status(self) -> dict:
-        return {"running": self.running, "interval_sec": self.interval,
-                "live_lots": [{"lot": v["lot"], "line": v["line"], "sampled": v["sampled"]} for v in self._lots.values()]}
+        stats = self.store.live_stats()
+        lots = [{"lot": v["lot"], "line": v["line"], "shift": v["shift"], "sampled": v["sampled"],
+                 **stats["lots"].get(v["lot"], {"parts": 0, "out_of_spec_parts": 0, "detections": 0})}
+                for v in sorted(self._lots.values(), key=lambda x: (x["shift_start"], x["line"]), reverse=True)]
+        return {"running": self.running, "interval_sec": self.interval, "live_lots": lots, "totals": stats["totals"]}
 
     def _loop(self):
         while self.running:
@@ -88,15 +91,22 @@ class Simulator:
         dets = []
         material = self.store.material(lot_row["material_lot"]) or {}
         bad_material = bool(material.get("deviations"))  # the planted bad heat is still in use on L3
-        p = 0.06 + (0.12 if line["id"] == "L1" and shift == "C" else 0) + (BAD_HEAT["pitting_boost"] if bad_material else 0)
+        # Same rates as the 60-day history (synthetic/generate.py), so live parts do not create false spikes:
+        # the line's base defect rate, plus the planted process spike and the bad material heat while they last.
+        spike = line["id"] == PROCESS_SPIKE["line"] and shift == PROCESS_SPIKE["shift"]
+        p = line["defect_rate"] + (PROCESS_SPIKE["boost"] if spike else 0) + (BAD_HEAT["pitting_boost"] if bad_material else 0)
         if rng.random() < p:
-            mix = {"L1": ["porosity", "scratch", "dent"], "L2": ["burr", "scratch", "dent"],
-                   "L3": ["pitting", "scratch", "dent"]}[line["id"]]
-            dtype = "pitting" if bad_material and rng.random() < 0.6 else rng.choice(mix)
+            if spike and rng.random() < PROCESS_SPIKE["share"]:
+                dtype = "porosity"
+            elif bad_material and rng.random() < 0.85:
+                dtype = "pitting"
+            else:
+                mix = line["defect_mix"]
+                dtype = rng.choices(list(mix), weights=list(mix.values()))[0]
             code = next(c for c in DEFECT_CODES if dtype in c["synonyms"])
             dets.append({"ts": now.isoformat(), "line": line["id"], "station": "ST3", "shift": shift, "lot": lot,
                          "part_serial": serial, "camera_id": CAMERAS[line["id"]], "defect_type": dtype,
-                         "defect_code": code["code"], "confidence": round(rng.uniform(0.6, 0.99), 3),
+                         "defect_code": code["code"], "confidence": round(min(max(rng.betavariate(8, 1.6), 0.5), 0.995), 3),
                          "severity": code["default_severity"], "location": rng.choice(LOCATIONS),
                          "bbox": json.dumps([100, 100, 30, 30]), "image_id": ""})
         return self.store.add_live(meas, dets, lot_row)

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import { Logo } from "../components/Icons.jsx";
+import { Logo, ThemeToggle } from "../components/Icons.jsx";
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, theme, onToggleTheme }) {
   const [username, setUsername] = useState("inspector");
   const [password, setPassword] = useState("demo123");
   const [demo, setDemo] = useState([]);
@@ -21,6 +21,7 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="login-screen">
+      <ThemeToggle theme={theme} onToggle={onToggleTheme} floating />
       <div className="login-card">
         <div className="brand big">
           <span className="logo"><Logo /></span>

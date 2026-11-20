@@ -1,3 +1,4 @@
+import { tc } from "../theme.js";
 // Dependency-free SVG charts (no chart library needed - works offline).
 
 // tuned for the dark theme: brushed silver, signal blue, amber, green, violet
@@ -52,19 +53,19 @@ export function LineChart({ series, refLines = [], height = 240, yLabel = "", xE
         {yLabel && <text x={12} y={P.t + 4} className="tick" transform={`rotate(-90 12 ${P.t + 4})`} textAnchor="end">{yLabel}</text>}
         {refLines.map((r, i) => (
           <g key={`r${i}`}>
-            <line x1={P.l} x2={W - P.r} y1={y(r.y)} y2={y(r.y)} stroke={r.color || RED}
+            <line x1={P.l} x2={W - P.r} y1={y(r.y)} y2={y(r.y)} stroke={tc(r.color || RED)}
                   strokeDasharray={r.dash ? "5 4" : ""} strokeWidth="1.4" />
-            <text x={W - P.r - 4} y={y(r.y) - 4} textAnchor="end" className="ref-label" fill={r.color || RED}>{r.label}</text>
+            <text x={W - P.r - 4} y={y(r.y) - 4} textAnchor="end" className="ref-label" fill={tc(r.color || RED)}>{r.label}</text>
           </g>
         ))}
         {series.map((s, si) => {
-          const color = s.color || PALETTE[si % PALETTE.length];
+          const color = tc(s.color || PALETTE[si % PALETTE.length]);
           const pts = s.points.map((p) => [x(xs.indexOf(p.x)), y(p.y), p]);
           return (
             <g key={s.name}>
               <polyline fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" points={pts.map(([a, b]) => `${a},${b}`).join(" ")} />
               {pts.map(([a, b, p]) => (
-                <circle key={p.x} cx={a} cy={b} r="2.2" fill="#0c0d10" stroke={color} strokeWidth="1.3">
+                <circle key={p.x} cx={a} cy={b} r="2.2" fill={tc("#0c0d10")} stroke={color} strokeWidth="1.3">
                   <title>{`${s.name} · ${p.x}: ${p.y}`}</title>
                 </circle>
               ))}
@@ -75,7 +76,7 @@ export function LineChart({ series, refLines = [], height = 240, yLabel = "", xE
       {series.length > 1 && (
         <div className="legend">
           {series.map((s, i) => (
-            <span key={s.name}><i style={{ background: s.color || PALETTE[i % PALETTE.length] }} />{s.name}</span>
+            <span key={s.name}><i style={{ background: tc(s.color || PALETTE[i % PALETTE.length]) }} />{s.name}</span>
           ))}
         </div>
       )}
@@ -96,8 +97,8 @@ export function ParetoChart({ data, height = 240 }) {
     <div className="chart">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="pareto chart">
         <defs>
-          <linearGradient id="bar-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#6db8ec" /><stop offset="1" stopColor="#1f5a84" /></linearGradient>
-          <linearGradient id="bar-silver" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#c9ced6" /><stop offset="1" stopColor="#4a5059" /></linearGradient>
+          <linearGradient id="bar-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={tc("#6db8ec")} /><stop offset="1" stopColor={tc("#1f5a84")} /></linearGradient>
+          <linearGradient id="bar-silver" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={tc("#c9ced6")} /><stop offset="1" stopColor={tc("#4a5059")} /></linearGradient>
         </defs>
         {niceTicks(0, max).map((t, i) => (
           <g key={i}>
@@ -108,7 +109,7 @@ export function ParetoChart({ data, height = 240 }) {
         {[0, 50, 80, 100].map((t) => (
           <text key={t} x={W - P.r + 6} y={yc(t) + 4} className="tick">{t}%</text>
         ))}
-        <line x1={P.l} x2={W - P.r} y1={yc(80)} y2={yc(80)} stroke="#4a5059" strokeDasharray="4 4" />
+        <line x1={P.l} x2={W - P.r} y1={yc(80)} y2={yc(80)} stroke={tc("#4a5059")} strokeDasharray="4 4" />
         {data.map((d, i) => (
           <g key={d.label}>
             <rect x={P.l + bw * i + bw * 0.15} y={y(d.value)} width={bw * 0.7} height={H - P.b - y(d.value)}
@@ -119,8 +120,8 @@ export function ParetoChart({ data, height = 240 }) {
             <text x={cx(i)} y={H - P.b + 16} textAnchor="middle" className="tick">{d.label}</text>
           </g>
         ))}
-        <polyline fill="none" stroke="#e2ac45" strokeWidth="1.6" points={data.map((d, i) => `${cx(i)},${yc(d.cum)}`).join(" ")} />
-        {data.map((d, i) => <circle key={i} cx={cx(i)} cy={yc(d.cum)} r="2.6" fill="#e2ac45"><title>{`${d.cum}% cumulative`}</title></circle>)}
+        <polyline fill="none" stroke={tc("#e2ac45")} strokeWidth="1.6" points={data.map((d, i) => `${cx(i)},${yc(d.cum)}`).join(" ")} />
+        {data.map((d, i) => <circle key={i} cx={cx(i)} cy={yc(d.cum)} r="2.6" fill={tc("#e2ac45")}><title>{`${d.cum}% cumulative`}</title></circle>)}
       </svg>
     </div>
   );

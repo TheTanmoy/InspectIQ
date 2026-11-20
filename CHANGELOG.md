@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.0 - 2026-11-20
+
+### Added
+- Dark / light mode switch in the sidebar and on the login screen, remembered per browser. All colours are theme
+  tokens; charts and the logo follow the theme.
+- Live Inspection totals counted on the server per lot and for the session (parts, out-of-spec parts, camera
+  detections): they only go up and survive a page reload. Each live lot shows its own counts.
+
+### Fixed
+- The live simulator now uses the same defect rates, defect mix, planted issues and confidence distribution as
+  the 60-day history, so a running demo no longer creates false shift spikes.
+- Live Inspection counters no longer drop when older parts leave the 200-part feed list.
+- High-risk banner and "Awaiting release" status readable in both themes.
+
 ## 1.1.2 - 2026-11-20
 
 ### Changed

@@ -144,3 +144,28 @@ def test_quality_cost_history_and_projection(ready, users):
     assert not security.can("plant_quality_head", "finops:view") and not security.can("plant_quality_head", "cba:view")
     with pytest.raises(ValueError):
         quality_cost.update_settings({"scrap_share": {"major": 1.5}})
+
+
+def test_live_simulator_matches_history_and_totals_only_grow(ready):
+    """Live parts use the historical rates (no false spikes), and session totals are never capped."""
+    from datetime import datetime
+    from app.core import config
+    from app.services.inspection_source import SyntheticSource
+    from app.services.simulator import Simulator
+    from synthetic.generate import LINES
+    store = SyntheticSource(config.DATA_DIR)          # own store: keep the shared one clean
+    sim = Simulator(store)
+    now = datetime.now().replace(hour=10, minute=0)    # shift A: no night-shift porosity boost
+    seen, last = {}, 0
+    for i in range(3000):
+        ev = sim.tick(now)
+        s = seen.setdefault(ev["line"], [0, 0]); s[0] += 1; s[1] += len(ev["detections"])
+        total = store.live_stats()["totals"]["detections"]
+        assert total >= last; last = total            # never goes down, unlike the 200-part window
+    assert store.live_stats()["totals"]["parts"] == 3000
+    base = {ln["id"]: ln["defect_rate"] for ln in LINES}
+    l2_rate = seen["L2"][1] / seen["L2"][0]
+    assert 0.3 * base["L2"] < l2_rate < 2.0 * base["L2"], l2_rate   # ~2.2 %, not the old 6 %
+    assert seen["L3"][1] / seen["L3"][0] > l2_rate                   # bad steel heat still raises L3
+    lots = sim.status()["live_lots"]
+    assert sum(l["detections"] for l in lots) == last and all("out_of_spec_parts" in l for l in lots)

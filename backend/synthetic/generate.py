@@ -105,6 +105,9 @@ MATERIALS = {
 }
 # Planted pattern 4: an L3 bar heat with high sulphur / non-metallic inclusions, accepted under deviation.
 # MnS inclusions open up as pits during chrome plating -> pitting rises on ALL shifts while that heat is used.
+# Planted pattern 1: after the mold insert change, L1 night shift (C) gets extra defects, mostly porosity.
+PROCESS_SPIKE = {"line": "L1", "shift": "C", "boost": 0.11, "share": 0.8, "days_ago": 12}
+
 BAD_HEAT = {"line": "L3", "days_ago": 9, "supplier": "Western Bar Mills (synthetic)",
             "props": {"S_pct": 0.041, "inclusion_rating": 2.1}, "pitting_boost": 0.075}
 
@@ -250,14 +253,14 @@ def generate(days: int = 60, out: Path = OUT, now: datetime | None = None) -> di
                                      "gauge_id": f["gauge"], "in_spec": f["lsl"] <= val <= f["usl"]})
 
                     p = line["defect_rate"]
-                    porosity_boost = lid == "L1" and shift == "C" and d > tool_change_day
+                    porosity_boost = lid == PROCESS_SPIKE["line"] and shift == PROCESS_SPIKE["shift"] and d > tool_change_day
                     if porosity_boost:
-                        p += 0.11
+                        p += PROCESS_SPIKE["boost"]
                     material_boost = material_lot == bad_ml
                     if material_boost:
                         p += BAD_HEAT["pitting_boost"]
                     if rng.random() < p:
-                        if porosity_boost and rng.random() < 0.8:
+                        if porosity_boost and rng.random() < PROCESS_SPIKE["share"]:
                             dtype = "porosity"
                         elif material_boost and rng_m.random() < 0.85:
                             dtype = "pitting"

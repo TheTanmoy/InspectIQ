@@ -54,6 +54,7 @@ class SyntheticSource:
             self._live = {"measurements": [], "detections": [], "manual_checks": [], "lots": {}}
             self._live_events: list[dict] = []
             self._event_seq = 0
+            self._live_counts: dict[str, dict] = {}
             self._cache: dict[str, pd.DataFrame] = {}
 
     def _frame(self, name: str) -> pd.DataFrame:
@@ -161,7 +162,18 @@ class SyntheticSource:
                                     for d in detections]}
             self._live_events.append(event)
             self._live_events = self._live_events[-500:]
+            c = self._live_counts.setdefault(lot_row["lot"], {"parts": 0, "out_of_spec_parts": 0, "detections": 0})
+            c["parts"] += len({m["part_serial"] for m in measurements}) or 1
+            c["out_of_spec_parts"] += len({m["part_serial"] for m in measurements if not m["in_spec"]})
+            c["detections"] += len(detections)
             return event
+
+    def live_stats(self) -> dict:
+        """Running totals since the backend started: per lot and for the whole session."""
+        with self._lock:
+            lots = {k: dict(v) for k, v in self._live_counts.items()}
+        totals = {k: sum(v[k] for v in lots.values()) for k in ("parts", "out_of_spec_parts", "detections")}
+        return {"lots": lots, "totals": totals}
 
     def live_events(self, since_id: int = 0) -> list[dict]:
         with self._lock:
@@ -196,7 +208,7 @@ class HttpSource(SyntheticSource):
             except Exception:
                 self._materials = _clean_materials(pd.DataFrame())
             self._live = {"measurements": [], "detections": [], "manual_checks": [], "lots": {}}
-            self._live_events, self._event_seq, self._cache = [], 0, {}
+            self._live_events, self._event_seq, self._cache, self._live_counts = [], 0, {}, {}
 
     def image_path(self, image_id: str):
         return None

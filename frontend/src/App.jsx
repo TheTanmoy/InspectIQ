@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, getToken, setToken, setUnauthorizedHandler } from "./api";
 import { Toast } from "./components/ui.jsx";
-import { Icon, Logo } from "./components/Icons.jsx";
+import { Icon, Logo, ThemeToggle } from "./components/Icons.jsx";
+import { applyTheme, initialTheme } from "./theme.js";
 import Login from "./pages/Login.jsx";
 import LiveFeed from "./pages/LiveFeed.jsx";
 import Reports from "./pages/Reports.jsx";
@@ -39,6 +40,12 @@ export default function App() {
   const [route, setRoute] = useState(parseHash());
   const [health, setHealth] = useState(null);
   const [toast, setToast] = useState(null);
+  const [theme, setThemeState] = useState(() => { const t = initialTheme(); applyTheme(t); return t; });
+  const toggleTheme = useCallback(() => {
+    const t = theme === "light" ? "dark" : "light";
+    applyTheme(t); // set the attribute first so charts read the new theme while re-rendering
+    setThemeState(t);
+  }, [theme]);
 
   const logout = useCallback(() => { setToken(""); setSession(null); }, []);
   useEffect(() => setUnauthorizedHandler(logout), [logout]);
@@ -65,7 +72,7 @@ export default function App() {
 
   if (checking) return <div className="center-screen">Loading…</div>;
   if (!session) {
-    return <Login onLogin={(s) => { setToken(s.token); setSession(s); navigate("reports"); }} />;
+    return <Login theme={theme} onToggleTheme={toggleTheme} onLogin={(s) => { setToken(s.token); setSession(s); navigate("reports"); }} />;
   }
 
   const can = (perm) => session.permissions.includes(perm);
@@ -98,6 +105,7 @@ export default function App() {
           ))}
         </nav>
         <div className="sidebar-foot">
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
           {/* AI model / data-source status is an operations detail - only IT Support & FinOps sees it */}
           {health && can("finops:edit") && (
             <div className="status">
