@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.2 - 2026-11-20
+
+### Changed
+- New 60-second animated overview video (`docs/InspectIQ_Overview.mp4`): code-driven animation, narration and a
+  music bed ducked under the voice. Narration in `docs/InspectIQ_Overview_script.txt`.
+- Screenshots in `docs/media/screens/` retaken with the current UI.
+
 ## 1.1.1 - 2026-11-20
 
 ### Changed

@@ -49,7 +49,7 @@ async def lifespan(_: FastAPI):
     get_simulator().stop()
 
 
-app = FastAPI(title="InspectIQ API", version="1.1.1", lifespan=lifespan,
+app = FastAPI(title="InspectIQ API", version="1.1.2", lifespan=lifespan,
               description="Automated manufacturing quality inspection reports with GenAI, guardrails, "
                           "editable compliance rules, role-based access and audit logging. All data is synthetic.")
 
