@@ -34,11 +34,14 @@ PERMISSIONS = {
     "audit:view": {"quality_manager", "compliance_officer", "plant_quality_head", "it_admin"},
     "assistant:use": {"inspector", "supervisor", "quality_manager", "compliance_officer", "plant_quality_head"},
     "simulator:control": {"supervisor", "quality_manager"},
-    # FinOps: AI token cost + support & maintenance run cost (IT); cost-benefit case (Plant Quality Head)
-    "finops:view": {"it_admin", "plant_quality_head", "quality_manager"},
+    # FinOps: AI token cost + support & maintenance run cost, and the tool's own business case (IT)
+    "finops:view": {"it_admin", "quality_manager"},
     "finops:edit": {"it_admin"},
-    "cba:view": {"plant_quality_head", "quality_manager", "it_admin"},
-    "cba:edit": {"plant_quality_head"},
+    "cba:view": {"it_admin", "quality_manager"},
+    "cba:edit": {"it_admin"},
+    # Cost of poor quality: scrap/rework history + projected savings if issues are resolved (Plant Quality Head)
+    "qcost:view": {"plant_quality_head", "quality_manager"},
+    "qcost:edit": {"plant_quality_head"},
 }
 
 

@@ -84,6 +84,10 @@ export const api = {
   finopsUsage: (days = 30) => request("GET", `/api/finops/usage${qs({ days })}`),
   costBenefit: () => request("GET", "/api/finops/cost-benefit"),
   finopsSettings: (section, changes, note = "") => request("PUT", "/api/finops/settings", { section, changes, note }),
+
+  // cost of poor quality (Plant Quality Head)
+  qualityCost: () => request("GET", "/api/quality-cost"),
+  qualityCostSettings: (changes, note = "") => request("PUT", "/api/quality-cost/settings", { changes, note }),
 };
 
 /** Streams the assistant reply; calls onToken(chunk) as text arrives. */

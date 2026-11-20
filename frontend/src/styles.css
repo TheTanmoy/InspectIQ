@@ -345,3 +345,10 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .num-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: .8rem 1rem; margin-top: .4rem; }
 .num-grid input { width: 100%; font-variant-numeric: tabular-nums; }
 .table input[type="number"] { width: 110px; padding: .3rem .45rem; }
+
+/* ---------- quality cost */
+.qc-figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; margin: .8rem 0 .4rem; }
+.qc-figs div { display: flex; flex-direction: column; gap: .15rem; }
+.qc-figs span { font-size: .6rem; text-transform: uppercase; letter-spacing: .14em; color: var(--faint); }
+.qc-figs strong { font-size: 1.25rem; font-weight: 300; color: var(--text); font-family: var(--font-display); }
+.qc-figs small { font-size: .72rem; color: var(--muted); }

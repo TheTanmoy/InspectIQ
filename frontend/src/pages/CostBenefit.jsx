@@ -40,8 +40,8 @@ export default function CostBenefit({ can, notify }) {
     <div className="page">
       <header className="page-header">
         <div>
-          <h1>Cost-Benefit Analysis</h1>
-          <p className="muted">Business case for InspectIQ – benefits against the full run cost (AI tokens, hosting, IT support). All amounts in US dollars.</p>
+          <h1>Solution Cost-Benefit</h1>
+          <p className="muted">Business case for the InspectIQ software itself – benefits against its full run cost (AI tokens, hosting, IT support). For IT and the Quality Manager. All amounts in US dollars.</p>
         </div>
         <Badge tone="amber">Assumptions – edit to match your plant</Badge>
       </header>
@@ -88,7 +88,7 @@ export default function CostBenefit({ can, notify }) {
         <button className="primary small" onClick={save} disabled={saving || !dirty}>{saving ? "Saving…" : dirty ? "Save & recalculate" : "Saved"}</button>}>
         <NumberGrid fields={FIELDS} values={draft} disabled={!editable} onChange={setDraft} />
         <p className="muted small-text">{d.note} Report volume and run costs come from the IT FinOps settings.
-          {!editable && " Only the Plant Quality Head can change these assumptions."}</p>
+          {!editable && " Only IT Support & FinOps can change these assumptions."}</p>
       </Card>
     </div>
   );

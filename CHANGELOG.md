@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.0 - 2026-11-20
+
+### Added
+- Quality Cost page for the Plant Quality Head: cost of poor quality from the plant's own history.
+  - Weekly scrap and rework cost by line (each lot's sampled defect rate applied to the full lot).
+  - Every open issue costed from the day it started (excess over the line's normal rate), with a weekly trend.
+  - Projected monthly saving if issues are resolved, one-time fix cost, payback and 12-month net; savings are
+    capped at the plant's pre-issue cost level.
+  - Editable assumptions (part values, rework cost, scrap share by severity, fix costs), audited.
+
+### Changed
+- Plant Quality Head no longer sees AI Cost & Ops or the software business case.
+- Cost-Benefit renamed Solution ROI; viewable by IT Support and the Quality Manager, editable by IT Support.
+- Deck: new Plant Quality Head quality-cost slide; video cost scene now shows the Quality Cost page.
+
 ## 1.0.1 - 2026-11-20
 
 ### Changed

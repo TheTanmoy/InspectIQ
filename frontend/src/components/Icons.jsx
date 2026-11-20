@@ -28,6 +28,7 @@ const paths = {
   audit: <><path d="M4 6h16M4 12h16M4 18h10" /><circle cx="19" cy="18" r="2" /></>,
   assistant: <><path d="M4 5h16v11H9l-5 4z" /><path d="M9 10h.01M12 10h.01M15 10h.01" /></>,
   value: <><path d="M3 17l5-5 4 4 8-8" /><path d="M15 8h5v5" /></>,
+  qcost: <><path d="M4 20h16" /><path d="M6 20V9l4 3V9l4 3V5l4 3v12" /><path d="M9 16h.01M13 16h.01M17 16h.01" /></>,
   finops: <><circle cx="12" cy="12" r="8" /><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.4 0-2.5.8-2.5 2s1.1 1.7 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5v1.5M12 16v1.5" /></>,
 };
 

@@ -40,8 +40,8 @@ API docs (Swagger): **http://localhost:8000/docs**
 | `supervisor` | Line Supervisor | + review / request changes, dashboard, view rules |
 | `qm` | Quality Manager | + approve, edit compliance rules, audit log |
 | `compliance` | Compliance Officer | Dashboard, edit compliance rules, audit log (read-only reports) |
-| `head` | Plant Quality Head | Releases high-risk reports (after QM approval), owns the Cost-Benefit assumptions |
-| `itops` | IT Support & FinOps | AI Cost & Ops page: token usage, cost forecast, pricing, support & maintenance run cost |
+| `head` | Plant Quality Head | Releases high-risk reports (after QM approval); Quality Cost page: scrap/rework history and projected savings if issues are resolved |
+| `itops` | IT Support & FinOps | AI Cost & Ops (token usage, cost forecast, run cost) and Solution ROI (business case of the software) |
 
 ### Docs for newcomers
 - `docs/InspectIQ_Product_Journey.pptx` - product journey deck for first-time users (speaker notes included)

@@ -12,6 +12,7 @@ import AuditLog from "./pages/AuditLog.jsx";
 import Assistant from "./pages/Assistant.jsx";
 import FinOps from "./pages/FinOps.jsx";
 import CostBenefit from "./pages/CostBenefit.jsx";
+import QualityCost from "./pages/QualityCost.jsx";
 
 // Menu items appear only if the user's role has the permission (same permissions the backend enforces).
 const NAV = [
@@ -21,7 +22,8 @@ const NAV = [
   { id: "compliance", label: "Compliance Rules", icon: "compliance", perm: "compliance:view", component: ComplianceRules },
   { id: "audit", label: "Audit Log", icon: "audit", perm: "audit:view", component: AuditLog },
   { id: "assistant", label: "Ask Quality AI", icon: "assistant", perm: "assistant:use", component: Assistant },
-  { id: "value", label: "Cost-Benefit", icon: "value", perm: "cba:view", component: CostBenefit },
+  { id: "quality-cost", label: "Quality Cost", icon: "qcost", perm: "qcost:view", component: QualityCost },
+  { id: "value", label: "Solution ROI", icon: "value", perm: "cba:view", component: CostBenefit },
   { id: "finops", label: "AI Cost & Ops", icon: "finops", perm: "finops:view", component: FinOps },
 ];
 

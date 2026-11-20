@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import analytics, assistant, audit as audit_api, auth, compliance as compliance_api, finops, inspection, reports
+from app.api import analytics, assistant, audit as audit_api, auth, compliance as compliance_api, finops, inspection, quality_cost, reports
 from app.core import config, db, security
 from app.core.llm import LLMError
 from app.services import compliance
@@ -49,7 +49,7 @@ async def lifespan(_: FastAPI):
     get_simulator().stop()
 
 
-app = FastAPI(title="InspectIQ API", version="1.0.1", lifespan=lifespan,
+app = FastAPI(title="InspectIQ API", version="1.1.0", lifespan=lifespan,
               description="Automated manufacturing quality inspection reports with GenAI, guardrails, "
                           "editable compliance rules, role-based access and audit logging. All data is synthetic.")
 
@@ -104,7 +104,7 @@ async def unexpected(_: Request, exc: Exception):
 
 
 for r in (auth.router, inspection.router, reports.router, analytics.router, compliance_api.router,
-          audit_api.router, assistant.router, finops.router):
+          audit_api.router, assistant.router, finops.router, quality_cost.router):
     app.include_router(r)
 
 

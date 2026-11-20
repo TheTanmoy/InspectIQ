@@ -123,3 +123,24 @@ def test_finops_token_cost_and_cost_benefit(ready, users):
         finops.update_settings("cba", {"pricing": {}})  # pricing is IT's section
     with pytest.raises(ValueError):
         finops.update_settings("finops", {"monthly_ai_budget_usd": -1})
+
+
+def test_quality_cost_history_and_projection(ready, users):
+    from app.core import security
+    from app.services import quality_cost
+    r = quality_cost.report(ready)
+    k = r["kpis"]
+    assert k["copq_history_usd"] > 0 and abs(k["scrap_history_usd"] + k["rework_history_usd"] - k["copq_history_usd"]) < 1
+    assert len({h["week"] for h in r["history"]}) >= 4  # weekly history
+    types = {i["type"] for i in r["issues"]}
+    assert {"material", "shift_spike"} <= types
+    # resolving issues can only bring cost back to the pre-issue level, never below it
+    assert k["monthly_copq_if_resolved_usd"] >= k["monthly_copq_before_issues_usd"] - 0.01
+    assert 0 < k["monthly_saving_usd"] <= k["monthly_copq_now_usd"]
+    mat = next(i for i in r["issues"] if i["type"] == "material")
+    assert mat["rate_now_pct"] > mat["rate_baseline_pct"] and mat["trend"]
+    # roles: the Plant Quality Head sees quality cost, not the IT cost pages
+    assert security.can("plant_quality_head", "qcost:edit")
+    assert not security.can("plant_quality_head", "finops:view") and not security.can("plant_quality_head", "cba:view")
+    with pytest.raises(ValueError):
+        quality_cost.update_settings({"scrap_share": {"major": 1.5}})

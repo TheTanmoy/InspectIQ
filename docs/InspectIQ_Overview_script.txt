@@ -14,6 +14,6 @@
 
 8. Across the plant, the dashboard spots patterns automatically: a porosity spike after a mould change, a drifting tool, an expired gauge.
 
-9. IT can see every token it costs. The whole system runs for about 512 dollars a month, and on our assumptions it pays back in 4 months.
+9. For the plant quality head, InspectIQ puts a price on poor quality. Scrap and rework now cost about 281 thousand dollars a month, and resolving today's four issues would save about 198 thousand a month, for a one-time fix of about 5 thousand. The software itself runs for about 512 dollars a month.
 
 10. InspectIQ. Hours of paperwork, now minutes of review.
